@@ -1,6 +1,5 @@
 import pygame
 import random
-import sys
 
 # Initialisierung von Pygame
 pygame.init()
@@ -36,7 +35,7 @@ high_score = 0
 # Bestenliste der Spieler
 player_scores = {}
 
-# Laden des Spieler- und Gegnerbildes und Anpassen der Größe
+# Laden des Gegnerbildes und Anpassen der Größe
 enemy_img = pygame.image.load("enemy.png")
 enemy_img = pygame.transform.scale(enemy_img, (ENEMY_WIDTH, ENEMY_HEIGHT))
 
@@ -51,11 +50,7 @@ def move_enemies(enemies, speed):
     for enemy in enemies:
         enemy.y += speed
 
-
-
-
-
-# Funktion zum Zeichnen des Spielers
+# Funktion zum Laden des Spielerbildes, Anpassen der Größe und Zeichnen des Spielers
 def draw_player(player, player_name):
     if player_name == "stu":
         player_img = pygame.image.load("stuttgart.png")
@@ -78,7 +73,7 @@ def show_high_score(score):
     font = pygame.font.SysFont(None, 30)
     text = font.render("Highscore: " + str(score), True, BLACK)
     screen.blit(text, (10, 10))
-    AL = int(score/100)
+    AL = int(score/600)
     ligen = liga[AL]
     text = font.render("Liga: " + str(ligen), True, BLACK)
     screen.blit(text, (10, 30))
@@ -87,7 +82,8 @@ def show_high_score(score):
 def show_player_scores(scores):
     font = pygame.font.SysFont(None, 20)
     y_offset = 50
-    for idx, (player, score) in enumerate(scores.items()):
+    sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+    for idx, (player, score) in enumerate(sorted_scores):
         text = font.render(f"{idx + 1}. {player}: {score}", True, BLACK)
         screen.blit(text, (10, y_offset))
         y_offset += 20
@@ -103,7 +99,8 @@ def restart_game():
 def main():
     global high_score
 
-    player_name = input("Gib deinen Namen ein! (lev, bay, stu, ...): ")
+    player_name = input("Gib deinen Namen ein: ")
+    player_club = input("Gib deinen Club ein! (lev, bay, stu, ...): ")
     player = pygame.Rect(WIDTH // 2 - PLAYER_WIDTH // 2, HEIGHT - 50, PLAYER_WIDTH, PLAYER_HEIGHT)
     enemies = []
     enemy_speed = ENEMY_INITIAL_SPEED
@@ -140,7 +137,7 @@ def main():
                 running = False
 
         # Zeichne Spieler und Gegner
-        draw_player(player, player_name)
+        draw_player(player, player_club)
         draw_enemies(enemies)
 
         # Zeige den Highscore
