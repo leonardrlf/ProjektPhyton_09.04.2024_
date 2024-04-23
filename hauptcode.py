@@ -1,177 +1,243 @@
 import pygame
 import random
+import sys
+from funktionen import*
+
 
 # Initialisierung von Pygame
 pygame.init()
 
+text_font = pygame.font.SysFont("Arial", 45)##Text formatierung
+text_font2= pygame.font.SysFont("Arial", 20)
 # Bildschirmabmessungen
 WIDTH, HEIGHT = 600, 400
 
-# Erstellung Liste der Ligen
-liga = ("Kreisliga", "Bezirksliga", "Landesliga", "Oberliga", "Regionalliga", "3. Liga", "2. Bundesliga", "1. Bundesliga", "Europa Conference League", "Europa League", "Championsleague")
+score= 0
+anzahlrunden = 0
+user_text = ''
+highscore = 0
+lives= 3
 
 # Farben
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 
+#Hintergrund eigenschaften
+BACKGROUND_WIDTH, BACKGROUND_HEIGHT = 600, 400
+
 # Spieler Eigenschaften
-PLAYER_WIDTH, PLAYER_HEIGHT = 50, 20
+PLAYER_WIDTH, PLAYER_HEIGHT = 45.34, 72.356
 PLAYER_SPEED = 5
 
 # Gegner Eigenschaften
 ENEMY_WIDTH, ENEMY_HEIGHT = 30, 30
-ENEMY_INITIAL_SPEED = 3
+ENEMY_SPEED = 3
 ENEMY_INTERVAL = 60  # Intervall, in dem ein neuer Gegner erscheint
+
+SHOT_WIDTH, SHOT_HEIGHT = 10, 30
+SHOT_SPEED = -5
+
+enemy_img = pygame.image.load("enemy.png")
+enemy_img = pygame.transform.scale(enemy_img, (ENEMY_WIDTH, ENEMY_HEIGHT)) #Formatieren der Graphik
+
+player_img = pygame.image.load("leverkusen.png")
+player_img = pygame.transform.scale(player_img, (PLAYER_WIDTH, PLAYER_HEIGHT))
+
+background_img = pygame.image.load("green.png")
+background_img= pygame.transform.scale(background_img,(BACKGROUND_WIDTH, BACKGROUND_HEIGHT))
+
+shot_img = pygame.image.load("münchen.png")
+shot_img = pygame.transform.scale(shot_img,(SHOT_WIDTH,SHOT_HEIGHT))
 
 # Initialisierung des Bildschirms
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Weiche den Feinden aus")
 clock = pygame.time.Clock()
 
-# Highscore
-high_score = 0
 
-# Bestenliste der Spieler
-player_scores = {}
 
-# Laden des Gegnerbildes und Anpassen der Größe
-enemy_img = pygame.image.load("enemy.png")
-enemy_img = pygame.transform.scale(enemy_img, (ENEMY_WIDTH, ENEMY_HEIGHT))
+#gameover screen
+def gameover_screen(user_text):
+    global score
+    global lives
+    draw_background()
+    draw_text("Game Over",text_font, (139,0,0),180,170)
+    draw_text("Zum weiter/nicht weiter spieln Enter/Esc",text_font2,(255,255,255),130,270)
+    draw_text("Score: "+ str(score), text_font2,(255,255,255),20,20)
+    highscore_name(score,user_text,anzahlrunden)
+    pygame.display.flip()
 
-# Funktion zum Erzeugen eines neuen Gegners
-def create_enemy():
-    x = random.randint(0, WIDTH - ENEMY_WIDTH)
-    y = 0 - ENEMY_HEIGHT
-    return pygame.Rect(x, y, ENEMY_WIDTH, ENEMY_HEIGHT)
+    
+    
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    score =0
+                    lives = 3
+                    return True
+                elif event.key == pygame.K_ESCAPE:
+                    return False
 
-# Funktion zum Bewegen der Gegner
-def move_enemies(enemies, speed):
-    for enemy in enemies:
-        enemy.y += speed
 
-# Funktion zum Laden des Spielerbildes, Anpassen der Größe und Zeichnen des Spielers
-def draw_player(player, player_name):
-    if player_name == "stu":
-        player_img = pygame.image.load("stuttgart.png")
-        player_img = pygame.transform.scale(player_img, (48, 52.24))
-    elif player_name == "bay":
-        player_img = pygame.image.load("münchen.png")
-        player_img = pygame.transform.scale(player_img, (50, 50))
-    else:
-        player_img = pygame.image.load("leverkusen.png")
-        player_img = pygame.transform.scale(player_img, (60, 46.45))
-    screen.blit(player_img, player)
 
-# Funktion zum Zeichnen der Gegner
-def draw_enemies(enemies):
-    for enemy in enemies:
-        screen.blit(enemy_img, enemy)
+# Funktion für die Usereingabe am Ende des Spiels
+def get_end_game_input(screen, clock):
+        
+        global user_text
+        font = pygame.font.Font(None, 32)
+        input_box = pygame.Rect(10, 40, 140, 32)
+        color_active = pygame.Color('black')
+        color_passive = pygame.Color('black')
+        color = color_passive
+        user_text = ''
+        active = True
+        namelist.append(user_text)
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
 
-# Funktion zum Anzeigen des Highscores
-def show_high_score(score):
-    font = pygame.font.SysFont(None, 30)
-    text = font.render("Highscore: " + str(score), True, BLACK)
-    screen.blit(text, (10, 10))
-    AL = int(score/600)
-    ligen = liga[AL]
-    text = font.render("Liga: " + str(ligen), True, BLACK)
-    screen.blit(text, (10, 30))
+                if event.type == pygame.KEYDOWN:
+                    if active:
+                        if event.key == pygame.K_RETURN:
+                            return user_text
+                        elif event.key == pygame.K_BACKSPACE:
+                            user_text = user_text[:-1]
+                        elif event.key == pygame.K_ESCAPE:
+                            pygame.quit()
+                            sys.exit()
+                        else:
+                            user_text += event.unicode
 
-# Funktion zum Anzeigen der Bestenliste der Spieler
-def show_player_scores(scores):
-    font = pygame.font.SysFont(None, 20)
-    y_offset = 50
-    sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
-    for idx, (player, score) in enumerate(sorted_scores):
-        text = font.render(f"{idx + 1}. {player}: {score}", True, BLACK)
-        screen.blit(text, (10, y_offset))
-        y_offset += 20
+            draw_background()
 
-# Funktion zum Neustart des Spiels
-def restart_game():
-    global high_score, player_scores
-    high_score = 0
-    player_scores = {}
-    main()
+            if active:
+                color = color_active
+            else:
+                color = color_passive
+
+            # Render den Text
+            text = font.render('Gib Deinen Namen ein:', True, (255, 255, 255))
+
+            # Position des Textes
+            text_x = 10
+            text_y = 10
+            screen.blit(text, (text_x, text_y))
+
+            pygame.draw.rect(screen, color, input_box)
+            text_surface = font.render(user_text, True, (255, 255, 255))
+            screen.blit(text_surface, (input_box.x+5, input_box.y+5))
+            input_box.w = max(100, text_surface.get_width()+10)
+
+            
+            pygame.display.flip()
+            clock.tick(60)
+
+     
+#Highscore und Name
+def highscore_name(score,user_text,anzahlrunden):
+    global highscore   
+    if score >= highscore:
+        highscore = score
+    draw_text(str(user_text)+"'s Highscore: "+ str(highscore), text_font2,(255,255,255),20,360)
+
+
+    
 
 # Hauptspiel
 def main():
-    global high_score
-
-    player_name = input("Gib deinen Namen ein: ")
-    player_club = input("Gib deinen Club ein! (lev, bay, stu, ...): ")
-    player = pygame.Rect(WIDTH // 2 - PLAYER_WIDTH // 2, HEIGHT - 50, PLAYER_WIDTH, PLAYER_HEIGHT)
+    player = pygame.Rect(WIDTH // 2 - PLAYER_WIDTH // 2, HEIGHT - 72.356, PLAYER_WIDTH, PLAYER_HEIGHT)
     enemies = []
-    enemy_speed = ENEMY_INITIAL_SPEED
-    score = 0
+    shots = []
+    lvlup_items= []
+    bonus_score=[]
+    global score
+    global anzahlrunden
+    global lives
 
     running = True
+    move_mouse = False
     while running:
-        screen.fill(WHITE)
+        draw_background()
+        draw_text("Score: "+ str(score), text_font2,(255,255,255),20,20)
+        draw_text("lives: "+ str(lives), text_font2,(255,255,255),20,40)
+        
+        if anzahlrunden >= 1:
+            highscore_name(score, user_text, anzahlrunden)
+        else:
+            draw_text("no highscore yet", text_font2, (255,255,255), 20, 360)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_r:
-                restart_game()
+                
+            elif event.type == pygame.MOUSEMOTION:
+                move_mouse = True
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    shots.append(create_shot(player))
+                elif event.key == pygame.K_ESCAPE:
+                    running = False
 
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT]:
-            player.x -= PLAYER_SPEED
-        if keys[pygame.K_RIGHT]:
-            player.x += PLAYER_SPEED
+        if move_mouse:
+            movemouse(player)
 
-        # Begrenze den Spieler auf den Bildschirm
         player.x = max(0, min(player.x, WIDTH - PLAYER_WIDTH))
 
-        # Bewege die Gegner und füge neue hinzu
-        move_enemies(enemies, enemy_speed)
+        move_enemies(enemies,score)
         if random.randint(0, ENEMY_INTERVAL) == 0:
             enemies.append(create_enemy())
+        
+        move_lvlup(lvlup_items)
+        if random.randint(0, LVLUP_ITEM_INTERVAL) == 0:
+            lvlup_items.append(create_lvlup())
 
-        # Kollisionserkennung
+        # Kollisionserkennung zwischen Spieler und Gegnern
         for enemy in enemies:
             if player.colliderect(enemy):
-                player_scores[player_name] = score
-                running = False
+                lives -= 1 
+                enemies.remove(enemy)
+                if lives == 0:
+                     running = False
+        
+        #Kollisionserkennung zwischen levelup und Schuss
+        for lvlup_item in lvlup_items:
+            for shot in shots:
+                if shot.colliderect(lvlup_item):
+                    lvlup_items.remove(lvlup_item)
+                    lives += 1
 
-        # Zeichne Spieler und Gegner
-        draw_player(player, player_club)
+        # Kollisionserkennung zwischen Schüssen und Gegnern
+        for shot in shots:
+            for enemy in enemies:
+                if shot.colliderect(enemy):
+                    shots.remove(shot)
+                    enemies.remove(enemy)
+
+        move_shot(shots)
+        draw_player(player)
         draw_enemies(enemies)
-
-        # Zeige den Highscore
-        show_high_score(high_score)
-
-        # Aktualisiere den Bildschirm
+        draw_shots(shots)
+        draw_lvlup(lvlup_items)
+        
+        score += 1
         pygame.display.flip()
         clock.tick(60)
 
-        # Aktualisiere den Highscore
-        high_score = max(high_score, score)
+    if anzahlrunden == 0:
+        get_end_game_input(screen, clock)
+    anzahlrunden += 1
 
-        # Erhöhe die Punktzahl
-        score += 1
-
-        # Erhöhe die Geschwindigkeit der Gegner
-        if score % 100 == 0:
-            enemy_speed += 0.5
-
-    # Zeige die Bestenliste der Spieler
-    show_player_scores(player_scores)
-    pygame.display.flip()
-
-    font = pygame.font.SysFont(None, 60)
-    text = font.render("GAME OVER", True, RED)
-    screen.blit(text, (170, 150))
-    pygame.display.flip()
-
-    # Abfrage neues Spiel
-    neu = input("Nochmal Spielen? (ja): ")
-    if neu == "ja":
+    if gameover_screen(user_text):
         main()
     else:
         pygame.quit()
+        sys.exit()
+
+        
 
 if __name__ == "__main__":
     main()
