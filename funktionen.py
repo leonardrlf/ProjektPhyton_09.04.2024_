@@ -29,19 +29,19 @@ RED = (255, 0, 0)
 BACKGROUND_WIDTH, BACKGROUND_HEIGHT = 600, 400
 
 # Spieler Eigenschaften
-PLAYER_WIDTH, PLAYER_HEIGHT = 45.34, 72.356
+PLAYER_WIDTH, PLAYER_HEIGHT = 60, 46.45
 PLAYER_SPEED = 5
 
 # Gegner Eigenschaften
-ENEMY_WIDTH, ENEMY_HEIGHT = 30, 30
+ENEMY_WIDTH, ENEMY_HEIGHT = 64, 46.55
 ENEMY_SPEED = 3
-ENEMY_INTERVAL = 45  # Intervall, in dem ein neuer Gegner erscheint
+ENEMY_INTERVAL = 60  # Intervall, in dem ein neuer Gegner erscheint
 
-LVLUP_ITEM_WIDTH,LVLUP_ITEM_HEIGHT = 30,30
-LVLUP_ITEM_SPEED = 3
-LVLUP_ITEM_INTERVAL = 1000
+LVLUP_ITEM_WIDTH,LVLUP_ITEM_HEIGHT = 30, 32.65
+LVLUP_ITEM_SPEED = 4
+LVLUP_ITEM_INTERVAL = 600
 
-SHOT_WIDTH, SHOT_HEIGHT = 10, 30
+SHOT_WIDTH, SHOT_HEIGHT = 15, 15
 SHOT_SPEED = -5
 
 BONUSSCORE_WIDTH,BONUSSCORE_HEIGHT = 30,30
@@ -78,6 +78,11 @@ def movemouse(player):
     player.y = max(HEIGHT // 2, min(mousepos[1], HEIGHT - PLAYER_HEIGHT))
     move_mouse = False
 
+def highscore_name(score,user_text,anzahlrunden):
+    global highscore   
+    if score >= highscore:
+        highscore = score
+    draw_text("Highscore von "+str(user_text)+": "+ str(highscore), text_font2,(255,255,255),20,360)
 
 #gameover screen
 def gameover_screen():
@@ -185,7 +190,7 @@ def move_lvlup(lvlup_items):
         lvlup_item.y+= LVLUP_ITEM_SPEED
 
 def create_bonusscore():
-    x = random.randint(0, WIDTH - BONUSSCORE_ITEM_WIDTH)
+    x = random.randint(0, WIDTH - BONUSSCORE_WIDTH)
     y = 0 - BONUSSCORE_HEIGHT
     return pygame.Rect(x, y, BONUSSCORE_WIDTH, BONUSSCORE_HEIGHT)
 

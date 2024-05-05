@@ -27,15 +27,15 @@ RED = (255, 0, 0)
 BACKGROUND_WIDTH, BACKGROUND_HEIGHT = 600, 400
 
 # Spieler Eigenschaften
-PLAYER_WIDTH, PLAYER_HEIGHT = 45.34, 72.356
+PLAYER_WIDTH, PLAYER_HEIGHT = 60, 46.45
 PLAYER_SPEED = 5
 
 # Gegner Eigenschaften
-ENEMY_WIDTH, ENEMY_HEIGHT = 30, 30
+ENEMY_WIDTH, ENEMY_HEIGHT = 64, 46.55
 ENEMY_SPEED = 3
 ENEMY_INTERVAL = 60  # Intervall, in dem ein neuer Gegner erscheint
 
-SHOT_WIDTH, SHOT_HEIGHT = 10, 30
+SHOT_WIDTH, SHOT_HEIGHT = 15, 15
 SHOT_SPEED = -5
 
 enemy_img = pygame.image.load("enemy.png")
@@ -63,7 +63,7 @@ def gameover_screen(user_text):
     global lives
     draw_background()
     draw_text("Game Over",text_font, (139,0,0),180,170)
-    draw_text("Zum weiter/nicht weiter spieln Enter/Esc",text_font2,(255,255,255),130,270)
+    draw_text("Weiter spielen/nicht weiter spielen: Enter/Esc",text_font2,(255,255,255),130,270)
     draw_text("Score: "+ str(score), text_font2,(255,255,255),20,20)
     highscore_name(score,user_text,anzahlrunden)
     pygame.display.flip()
@@ -74,7 +74,7 @@ def gameover_screen(user_text):
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
-                    score =0
+                    score = 0
                     lives = 3
                     return True
                 elif event.key == pygame.K_ESCAPE:
@@ -120,7 +120,7 @@ def get_end_game_input(screen, clock):
                 color = color_passive
 
             # Render den Text
-            text = font.render('Gib Deinen Namen ein:', True, (255, 255, 255))
+            text = font.render('Gib deinen Namen ein:', True, (255, 255, 255))
 
             # Position des Textes
             text_x = 10
@@ -142,7 +142,7 @@ def highscore_name(score,user_text,anzahlrunden):
     global highscore   
     if score >= highscore:
         highscore = score
-    draw_text(str(user_text)+"'s Highscore: "+ str(highscore), text_font2,(255,255,255),20,360)
+    draw_text("Highscore von "+str(user_text)+": "+ str(highscore), text_font2,(255,255,255),20,360)
 
 
     
@@ -163,12 +163,12 @@ def main():
     while running:
         draw_background()
         draw_text("Score: "+ str(score), text_font2,(255,255,255),20,20)
-        draw_text("lives: "+ str(lives), text_font2,(255,255,255),20,40)
+        draw_text("Leben: "+ str(lives), text_font2,(255,255,255),20,40)
         
         if anzahlrunden >= 1:
             highscore_name(score, user_text, anzahlrunden)
         else:
-            draw_text("no highscore yet", text_font2, (255,255,255), 20, 360)
+            draw_text("Kein Highscore vorhanden!", text_font2, (255,255,255), 20, 360)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -195,22 +195,28 @@ def main():
         if random.randint(0, LVLUP_ITEM_INTERVAL) == 0:
             lvlup_items.append(create_lvlup())
 
-        # Kollisionserkennung zwischen Spieler und Gegnern
+        # Kollisionserkennung zwischen Spieler und Gegner
         for enemy in enemies:
             if player.colliderect(enemy):
                 lives -= 1 
                 enemies.remove(enemy)
                 if lives == 0:
                      running = False
+
+        # Kollisionserkennung zwischen Spieler und levelup
+        for lvlup_item in lvlup_items:
+            if player.colliderect(lvlup_item):
+                lvlup_items.remove(lvlup_item)
+                lives += 1
         
-        #Kollisionserkennung zwischen levelup und Schuss
+        # Kollisionserkennung zwischen levelup und Schuss
         for lvlup_item in lvlup_items:
             for shot in shots:
                 if shot.colliderect(lvlup_item):
                     lvlup_items.remove(lvlup_item)
                     lives += 1
 
-        # Kollisionserkennung zwischen Schüssen und Gegnern
+        # Kollisionserkennung zwischen Schuss und Gegner
         for shot in shots:
             for enemy in enemies:
                 if shot.colliderect(enemy):
